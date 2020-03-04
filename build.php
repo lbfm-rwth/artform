@@ -76,6 +76,9 @@ if ($action == 'view' && isValidFormId($_POST['id'])) {
 
 
 <script>
+var dt = null;
+const noCols = [{title:''}];
+
 $($ => {
   $('#formbuilder').formBuilder({
     acionButtons: ['save', 'clear'],
@@ -94,12 +97,14 @@ $($ => {
       });
     }
   });
+  
+  dt = $('#view').DataTable({columns: noCols});
+  
   $.post('', {action: 'ls'}, function(ls) {
     for (var i=0; i<ls.length; ++i) {
      const id = ls[i];
      $('<div/>').text(id).click(function() {
        $.post('', {action: 'view', id: id}, function(raw) {
-         raw = JSON.parse(raw);
          var data = [], columns = [];
          for (var i = 0; i<raw.length; ++i) {
            data.push([]);
@@ -108,12 +113,12 @@ $($ => {
              if (i == 0)  columns.push({title: raw[i][j].name});
            }
          }
-         if (raw.length)  $('#view').DataTable({
-            data:data, columns:columns,
-            responsive:true
+         if (dt)  dt.destroy();
+         dt = $('#view').empty().DataTable({
+            data: data,
+            columns: columns.length ? columns : noCols
          });
-         else $('#view').html('<i>no data yet</i>');
-       });
+       }, 'json');
      }).appendTo("#ls");
     }
   }, 'json');
