@@ -38,6 +38,9 @@ if ($action == 'submit' && isValidFormId($_POST['id']))  {
 <script
   src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 </head>
+<style type="text/css">
+    body  {background: linear-gradient(to top right, red, orange);}
+</style>
 <body>
   
 <form>
