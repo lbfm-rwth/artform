@@ -14,21 +14,23 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9]+$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  return preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';
-if ($action == 'save') {
-  $id = '';
-  while ($id == '' || file_exists("forms/$id"))  {
-    $id = ''.rand(10**8, 10**9);
-  }
+if ($action == 'save' && isset($_POST['id'])) {
+  $id = $_POST['id'];
+  if (!preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id))
+    die('!Id must have length 4-20 and consists of letters, numbers, "-", and "_".');
   
-  mkdir("forms/$id");
-  $f = fopen("forms/$id/form.json", "w+");
+  $fid = "forms/$id";
+  if (file_exists($fid))
+    die('!Id exists already.');
+  
+  mkdir($fid);
+  $f = fopen("$fid/form.json", "w+");
   fputs($f, $_POST['formdata']);
   fclose($f);
-  
   die($id);
 }
 
@@ -69,12 +71,12 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   body  {background: linear-gradient(to top right, #f40, #fa2);}
 
   #ls {margin-bottom:2em;}
-  #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background:#44a; color:white; margin:0.2em; border-radius:0.2em;}
+  #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background: #11fd; color:white; margin:0.2em; border-radius:0.2em;}
   
   #view {margin:0.5em; background:#fff4; padding:0.5em; border-radius: 0.5em;}
   
   .btn.clear-all {background: #f00a; color:white;}
-  .btn.save-template {background: #070a; color:white;}
+  .btn.save-template {background: #090a; color:white;}
 </style>
 </head>
 <body>
@@ -89,6 +91,17 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 <script>
 var dt = null;
 const noCols = [{title:''}];
+
+function makeForm(formData)  {
+  const nid = prompt("Short Id");
+  if (!nid) return;
+  $.post('', {action: 'save', id: nid, formdata: formData}, function(reply) {
+    if (reply.substr(0, 1) == '!')
+      makeForm(formData); // try again
+    else
+      location.href = 'index.php?'+reply;
+  });
+}
 
 $($ => {
   $('#formbuilder').formBuilder({
@@ -114,12 +127,7 @@ $($ => {
       subtype: "text",
       icon: "[]",
     }],
-    onSave: (evt, formData) => {
-      $.post('', {action: 'save', formdata: formData}, function(reply) {
-        if (reply != 'ERR')
-          location.href = 'index.php?'+reply;
-      });
-    }
+    onSave: (evt, formData) => makeForm(formData)
   });
   
   dt = $('#view table').DataTable({columns: noCols});

@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9]+$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  return preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 if ( isset($_POST['action']) && $_POST['action'] == 'submit'
