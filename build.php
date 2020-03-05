@@ -90,6 +90,19 @@ $($ => {
     ],
     disableFields: ['autocomplete', 'button', 'hidden', 'file'],
     disabledActionButtons: ['data'],
+    disabledAttrs: ['access'],
+    disabledSubtypes: {text: ['password']},
+    fields: [{
+      label: "Email",
+      type: "text",
+      subtype: "email",
+      icon: "@",
+    },{
+      label: "Name",
+      type: "text",
+      subtype: "text",
+      icon: "[]",
+    }],
     onSave: (evt, formData) => {
       $.post('', {action: 'save', formdata: formData}, function(reply) {
         if (reply != 'ERR')
