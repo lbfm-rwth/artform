@@ -1,0 +1,7 @@
+Order Allow,Deny 
+Deny from all 
+
+<FilesMatch "form\.json$">
+  Order Deny,Allow
+  Allow from all
+</FilesMatch>

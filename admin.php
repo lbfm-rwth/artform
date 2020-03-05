@@ -1,21 +1,31 @@
 <?php
-
+$valid_passwords = array ("admin" => "admin123");
+$valid_users = array_keys($valid_passwords);
+$user = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
+$pass = isset($_SERVER['PHP_AUTH_PW']) ? $_SERVER['PHP_AUTH_PW'] : '';
+$validated = (in_array($user, $valid_users)) && ($pass == $valid_passwords[$user]);
+if (!$validated) {
+  header('WWW-Authenticate: Basic realm="ArtForm"');
+  header('HTTP/1.0 401 Unauthorized');
+  die ("Not authorized");
+}
+//----------- start authorized -------------
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9]+$/', $id) && file_exists($id) && is_dir($id);
+  return preg_match('/^[0-9]+$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 if ($action == 'save') {
   $id = '';
-  while ($id == '' || file_exists($id))  {
+  while ($id == '' || file_exists("forms/$id"))  {
     $id = ''.rand(10**8, 10**9);
   }
   
-  mkdir($id);
-  $f = fopen("$id/form.json", "w+");
+  mkdir("forms/$id");
+  $f = fopen("forms/$id/form.json", "w+");
   fputs($f, $_POST['formdata']);
   fclose($f);
   
@@ -23,21 +33,15 @@ if ($action == 'save') {
 }
 
 if ($action == 'ls') {
-  $ls = [];
-  foreach(scandir('.') as $id) {
-    if (isValidFormId($id)) {
-      $ls[] = $id;
-    }
-  }
-  die(json_encode($ls));
+  die(json_encode(array_values(array_filter(scandir('forms/'), 'isValidFormId'))));
 }
       
-if ($action == 'view' && isValidFormId($_POST['id'])) {
-  $id = $_POST['id'];
+if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
+  $fid = 'forms/'.$_POST['id'];
   $data = [];
-  foreach(scandir($id) as $fn) {
-    if (!is_dir("$id/$fn") && preg_match('/^[0-9]+\.dat\.json$/', $fn)) {
-      $data[] = file_get_contents("$id/$fn");
+  foreach(scandir("$fid") as $fn) {
+    if (!is_dir("$fid/$fn") && preg_match('/^[0-9]+\.dat\.json$/', $fn)) {
+      $data[] = file_get_contents("$fid/$fn");
     }
   }
   die('['.implode($data, ',').']');
@@ -47,7 +51,7 @@ if ($action == 'view' && isValidFormId($_POST['id'])) {
 ?>
 <html>
 <head>
-<title>Make form</title>
+<title>artform [admin]</title>
 <script
   src="https://code.jquery.com/jquery-3.4.1.min.js"
   integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
@@ -62,9 +66,15 @@ if ($action == 'view' && isValidFormId($_POST['id'])) {
   href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
 
 <style type="text/css">
-  body  {background: linear-gradient(to top right, red, orange);}
+  body  {background: linear-gradient(to top right, #f40, #fa2);}
+
+  #ls {margin-bottom:2em;}
   #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background:#44a; color:white; margin:0.2em; border-radius:0.2em;}
-  #view {margin-top:2em;}
+  
+  #view {margin:0.5em; background:#fff4; padding:0.5em; border-radius: 0.5em;}
+  
+  .btn.clear-all {background: #f00a; color:white;}
+  .btn.save-template {background: #070a; color:white;}
 </style>
 </head>
 <body>
@@ -72,8 +82,9 @@ if ($action == 'view' && isValidFormId($_POST['id'])) {
 <div id="formbuilder"></div>
 <hrule />
 <div id="ls"></div>
-<table id="view" class="cell-border compact stripe hover"></table>
-
+<div id="view">
+<table class="cell-border compact stripe hover"></table>
+</div>
 
 <script>
 var dt = null;
@@ -111,7 +122,7 @@ $($ => {
     }
   });
   
-  dt = $('#view').DataTable({columns: noCols});
+  dt = $('#view table').DataTable({columns: noCols});
   
   $.post('', {action: 'ls'}, function(ls) {
     for (var i=0; i<ls.length; ++i) {
@@ -127,7 +138,7 @@ $($ => {
            }
          }
          if (dt)  dt.destroy();
-         dt = $('#view').empty().DataTable({
+         dt = $('#view table').empty().DataTable({
             data: data,
             columns: columns.length ? columns : noCols
          });

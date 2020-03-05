@@ -1,22 +1,23 @@
 <?php
-
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9]+$/', $id) && file_exists($id) && is_dir($id);
+  return preg_match('/^[0-9]+$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
-$action = isset($_POST['action']) ? $_POST['action'] : '';
-if ($action == 'submit' && isValidFormId($_POST['id']))  {
-  $formId = $_POST['id'];
+if ( isset($_POST['action']) && $_POST['action'] == 'submit'
+  && isset($_POST['id']) && isValidFormId($_POST['id'])
+  && isset($_POST['data']) )  {
+  
+  $fid = 'forms/'.$_POST['id'];
   $data = $_POST['data'];
 
   $id = '';
-  while ($id == '' || file_exists("$formId/$id.dat.json"))  {
+  while ($id == '' || file_exists("$fid/$id.dat.json"))  {
     $id = ''.rand(10**8, 10**9);
   }
-  $f = fopen("$formId/$id.dat.json", "w");
+  $f = fopen("$fid/$id.dat.json", "w");
   fwrite($f, $data);
   fclose($f);
   
@@ -24,11 +25,9 @@ if ($action == 'submit' && isValidFormId($_POST['id']))  {
 }
 
 ?>
-
-
 <html>
 <head>
-<title>Form</title>
+<title>artform</title>
 <script
   src="https://code.jquery.com/jquery-3.4.1.min.js"
   integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
@@ -39,10 +38,11 @@ if ($action == 'submit' && isValidFormId($_POST['id']))  {
   src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 </head>
 <style type="text/css">
-    body  {background: linear-gradient(to top right, red, orange);}
+    body  {background: linear-gradient(to top right, #f40, #fa2);}
+    form  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;}
 </style>
 <body>
-  
+
 <form>
 <div id="formContent"></div>
 <button id="submit">submit</button>
@@ -52,7 +52,7 @@ if ($action == 'submit' && isValidFormId($_POST['id']))  {
 $($ => {
   const id = (location.search.length > 1) ? location.search.substr(1) : null;
   if (id) {
-    $.get(id+'/form.json', function(formdata) {
+    $.get('forms/'+id+'/form.json', function(formdata) {
       $("#formContent").formRender({formData:formdata});
     }, 'text');
     
