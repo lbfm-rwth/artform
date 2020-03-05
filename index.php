@@ -39,7 +39,7 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
 </head>
 <style type="text/css">
     body  {background: linear-gradient(to top right, #f40, #fa2);}
-    form  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;}
+    form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;}
 </style>
 <body>
 
@@ -47,6 +47,8 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
 <div id="formContent"></div>
 <button id="submit">submit</button>
 </form>
+
+<div id="msg"></div>
 
 <script>
 $($ => {
@@ -59,7 +61,8 @@ $($ => {
     $('#submit').click(function() {
       const data = JSON.stringify($('form').serializeArray());
       $.post('', {action: 'submit', id: id, data: data}, function(reply) {
-        $('body').html(reply);
+        $('body > form').remove();
+        $('#msg').html(reply);
       });
     });
     

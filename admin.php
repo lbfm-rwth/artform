@@ -25,7 +25,7 @@ if ($action == 'save' && isset($_POST['id'])) {
   
   $fid = "forms/$id";
   if (file_exists($fid))
-    die('!Id exists already.');
+    die("!Id \"$id\" exists already.");
   
   mkdir($fid);
   $f = fopen("$fid/form.json", "w+");
@@ -70,7 +70,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 <style type="text/css">
   body  {background: linear-gradient(to top right, #f40, #fa2);}
 
-  #ls {margin-bottom:2em;}
+  #ls {margin-bottom:1em;}
   #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background: #11fd; color:white; margin:0.2em; border-radius:0.2em;}
   
   #view {margin:0.5em; background:#fff4; padding:0.5em; border-radius: 0.5em;}
@@ -87,7 +87,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 <hrule />
 <div id="ls"></div>
 <div id="view">
-<span></span><a target="_blank"></a>
+<span></span><a target="_blank"></a><br /><br />
 <table class="cell-border compact stripe hover"></table>
 </div>
 
@@ -95,12 +95,12 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 var dt = null;
 const noCols = [{title:''}];
 
-function makeForm(formData)  {
-  const nid = prompt("Short Id");
+function makeForm(formData, msg)  {
+  const nid = prompt("Short Id" + (msg == '' ? '' : "\n"+msg));
   if (!nid) return;
   $.post('', {action: 'save', id: nid, formdata: formData}, function(reply) {
     if (reply.substr(0, 1) == '!')
-      makeForm(formData); // try again
+      makeForm(formData, reply.substr(1)); // try again
     else
       location.href = 'index.php?'+reply;
   });
@@ -113,29 +113,15 @@ function makeLink(id) {
 $($ => {
   $('#formbuilder').formBuilder({
     acionButtons: ['save', 'clear'],
-    controlOrder: [
-    'header', 'email',
-    'text', 'textarea',
-    'number', 'date',
-    'select', 'checkbox-group', 'radio-group',
-    'paragraph'
-    ],
+    controlOrder: ['header', 'text', 'textarea', 'number', 'date',
+    'select', 'checkbox-group', 'radio-group', 'paragraph'],
     disableFields: ['autocomplete', 'button', 'hidden', 'file'],
     disabledActionButtons: ['data'],
     disabledAttrs: ['access'],
     disabledSubtypes: {text: ['password']},
-    fields: [{
-      label: "Email",
-      type: "text",
-      subtype: "email",
-      icon: "@",
-    },{
-      label: "Name",
-      type: "text",
-      subtype: "text",
-      icon: "[]",
-    }],
-    onSave: (evt, formData) => makeForm(formData)
+    fields: [{label: "Email", type: "text", subtype: "email", icon: "@",},
+      {label: "Name", type: "text", subtype: "text", icon: "[]"}],
+    onSave: (evt, formData) => makeForm(formData, '')
   });
   
   dt = $('#view > table').DataTable({columns: noCols});
