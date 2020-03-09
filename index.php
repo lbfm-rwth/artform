@@ -15,7 +15,7 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
 
   $id = '';
   while ($id == '' || file_exists("$fid/$id.dat.json"))  {
-    $id = ''.rand(10**8, 10**9);
+    $id = ''.date("Y-m-d_H:i:s");
   }
   $f = fopen("$fid/$id.dat.json", "w");
   fwrite($f, $data);
@@ -57,7 +57,6 @@ $($ => {
     $.get('forms/'+id+'/form.json', function(formdata) {
       $("#formContent").formRender({formData:formdata});
     }, 'text');
-    
     $('#submit').click(function() {
       const data = JSON.stringify($('form').serializeArray());
       $.post('', {action: 'submit', id: id, data: data}, function(reply) {
@@ -67,6 +66,9 @@ $($ => {
     });
     
     $('form').on('submit', $ => {return false;});
+  }
+  else{
+    //TODO: Wrong page
   }
 });
 </script>
