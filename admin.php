@@ -1,6 +1,4 @@
 <?php
-  print_r($_SERVER);
-  die();
 
 $valid_passwords = array ("admin" => "admin123");
 $valid_users = array_keys($valid_passwords);
