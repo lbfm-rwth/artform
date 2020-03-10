@@ -1,4 +1,7 @@
 <?php
+  print_r($_SERVER);
+  die();
+
 $valid_passwords = array ("admin" => "admin123");
 $valid_users = array_keys($valid_passwords);
 $user = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
@@ -7,7 +10,7 @@ $validated = (in_array($user, $valid_users)) && ($pass == $valid_passwords[$user
 if (!$validated) {
   header('WWW-Authenticate: Basic realm="ArtForm"');
   header('HTTP/1.0 401 Unauthorized');
-  die ("Not authorized");
+  die ("Not authorized $user/$pass.");
 }
 //----------- start authorized -------------
 error_reporting(E_ALL);
