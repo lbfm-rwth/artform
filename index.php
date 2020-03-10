@@ -69,7 +69,7 @@ $($ => {
     $('form').on('submit', $ => {return false;});
   }
   else{
-    //TODO: Wrong page
+    document.write("There is no survey here. You are on the wrong page.");
   }
 });
 </script>
