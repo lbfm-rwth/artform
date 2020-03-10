@@ -13,10 +13,7 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
   $fid = 'forms/'.$_POST['id'];
   $data = $_POST['data'];
 
-  $id = '';
-  while ($id == '' || file_exists("$fid/$id.dat.json"))  {
-    $id = ''.date("Y-m-d_H-i-s");
-  }
+  $id = ''.date("Y-m-d_H-i-s_").rand(1,1000);
   array_unshift($data, array("name" => "timestamp", "value" => $id));
   $f = fopen("$fid/$id.dat.json", "w");
   fwrite($f, json_encode($data));
@@ -57,7 +54,9 @@ $($ => {
   if (id) {
     $.get('forms/'+id+'/form.json', function(formdata) {
       $("#formContent").formRender({formData:formdata});
-    }, 'text');
+    }, 'text').fail(function(){
+      $("body").html("<h2>There is no survey here. You are on the wrong page.</h2>");
+    });
     $('#submit').click(function() {
       const data = $('form').serializeArray();
       $.post('', {action: 'submit', id: id, data: data}, function(reply) {
@@ -69,7 +68,7 @@ $($ => {
     $('form').on('submit', $ => {return false;});
   }
   else{
-    document.write("There is no survey here. You are on the wrong page.");
+    $("body").html("<h2>There is no survey here. You are on the wrong page.</h2>");
   }
 });
 </script>
