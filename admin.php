@@ -82,7 +82,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 </style>
 </head>
 <body>
-
+<?php if(file_exists("format_header.html")) include ("format_header.html");?>
 <div id="formbuilder"></div>
 <hrule />
 <div id="ls"></div>

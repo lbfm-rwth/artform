@@ -40,7 +40,7 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
     form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;}
 </style>
 <body>
-
+<?php if(file_exists("format_header.html")) include ("format_header.html");?>
 <form>
 <div id="formContent"></div>
 <button id="submit">submit</button>
@@ -55,7 +55,7 @@ $($ => {
     $.get('forms/'+id+'/form.json', function(formdata) {
       $("#formContent").formRender({formData:formdata});
     }, 'text').fail(function(){
-      $("body").html("<h2>There is no survey here. You are on the wrong page.</h2>");
+      $("body > form").html("<h2>There is no survey here. You are on the wrong page.</h2>");
     });
     $('#submit').click(function() {
       const data = $('form').serializeArray();
@@ -68,7 +68,7 @@ $($ => {
     $('form').on('submit', $ => {return false;});
   }
   else{
-    $("body").html("<h2>There is no survey here. You are on the wrong page.</h2>");
+    $("body > form").html("<h2>There is no survey here. You are on the wrong page.</h2>");
   }
 });
 </script>
