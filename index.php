@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  return preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 if ( isset($_POST['action']) && $_POST['action'] == 'submit'
@@ -15,10 +15,11 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
 
   $id = '';
   while ($id == '' || file_exists("$fid/$id.dat.json"))  {
-    $id = ''.date("Y-m-d_H:i:s");
+    $id = ''.date("Y-m-d_H-i-s");
   }
+  array_unshift($data, array("name" => "timestamp", "value" => $id));
   $f = fopen("$fid/$id.dat.json", "w");
-  fwrite($f, $data);
+  fwrite($f, json_encode($data));
   fclose($f);
   
   die('Form data saved.');
@@ -58,7 +59,7 @@ $($ => {
       $("#formContent").formRender({formData:formdata});
     }, 'text');
     $('#submit').click(function() {
-      const data = JSON.stringify($('form').serializeArray());
+      const data = $('form').serializeArray();
       $.post('', {action: 'submit', id: id, data: data}, function(reply) {
         $('body > form').remove();
         $('#msg').html(reply);

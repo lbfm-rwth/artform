@@ -14,14 +14,14 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  return preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 if ($action == 'save' && isset($_POST['id'])) {
   $id = $_POST['id'];
-  if (!preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id))
-    die('!Id must have length 4-20 and consists of letters, numbers, "-", and "_".');
+  if (!preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id))
+    die('!Id must have length 4-50 and consists of letters, numbers, "-", ":" and "_".');
   
   $fid = "forms/$id";
   if (file_exists($fid))
@@ -42,7 +42,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   $fid = 'forms/'.$_POST['id'];
   $data = [];
   foreach(scandir("$fid") as $fn) {
-    if (!is_dir("$fid/$fn") && preg_match('/^[0-9]+\.dat\.json$/', $fn)) {
+    if (!is_dir("$fid/$fn") && preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}+\.dat\.json$/', $fn)) {
       $data[] = file_get_contents("$fid/$fn");
     }
   }
