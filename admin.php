@@ -68,8 +68,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
 
 <style type="text/css">
-  body  {background: linear-gradient(to top right, #f40, #fa2);}
-
+  body  {background: linear-gradient(to top right, #B65256, #E5C5C0);}
   #ls {margin-bottom:1em;}
   #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background: #11fd; color:white; margin:0.2em; border-radius:0.2em;}
   

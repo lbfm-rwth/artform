@@ -36,7 +36,7 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
   src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 </head>
 <style type="text/css">
-    body  {background: linear-gradient(to top right, #f40, #fa2);}
+    body  {background: linear-gradient(to top right, #00549F, #C7DDF2);}
     form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;}
 </style>
 <body>
