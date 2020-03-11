@@ -1,1 +1,4 @@
 forms/*/
+.htaccess
+.htpasswd
+format_header.html

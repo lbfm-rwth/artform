@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  return preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 if ( isset($_POST['action']) && $_POST['action'] == 'submit'
@@ -13,12 +13,10 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
   $fid = 'forms/'.$_POST['id'];
   $data = $_POST['data'];
 
-  $id = '';
-  while ($id == '' || file_exists("$fid/$id.dat.json"))  {
-    $id = ''.rand(10**8, 10**9);
-  }
+  $id = ''.date("Y-m-d_H-i-s_").rand(1,1000);
+  array_unshift($data, array("name" => "timestamp", "value" => $id));
   $f = fopen("$fid/$id.dat.json", "w");
-  fwrite($f, $data);
+  fwrite($f, json_encode($data));
   fclose($f);
   
   die('Form data saved.');
@@ -38,16 +36,14 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
   src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 </head>
 <style type="text/css">
-    body  {background: linear-gradient(to top right, #f40, #fa2);}
+    body  {background: linear-gradient(to top right, #00549F, #C7DDF2);}
     html,body {width:100%;}
-    form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;
-        max-width:40rem; margin:0 auto;
+    form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4; max-width:40rem; margin:0 auto;
     }
     form, form * {font-size: 1.2rem;}
-    
 </style>
 <body>
-
+<?php if(file_exists("format_header.html")) include ("format_header.html");?>
 <form>
 <div id="formContent"></div>
 <button id="submit">submit</button>
@@ -61,10 +57,11 @@ $($ => {
   if (id) {
     $.get('forms/'+id+'/form.json', function(formdata) {
       $("#formContent").formRender({formData:formdata});
-    }, 'text');
-    
+    }, 'text').fail(function(){
+      $("body > form").html("<h2>There is no survey here. You are on the wrong page.</h2>");
+    });
     $('#submit').click(function() {
-      const data = JSON.stringify($('form').serializeArray());
+      const data = $('form').serializeArray();
       $.post('', {action: 'submit', id: id, data: data}, function(reply) {
         $('body > form').remove();
         $('#msg').html(reply);
@@ -72,6 +69,9 @@ $($ => {
     });
     
     $('form').on('submit', $ => {return false;});
+  }
+  else{
+    $("body > form").html("<h2>There is no survey here. You are on the wrong page.</h2>");
   }
 });
 </script>

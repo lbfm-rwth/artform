@@ -1,4 +1,7 @@
 <?php
+  print_r($_SERVER);
+  die();
+
 $valid_passwords = array ("admin" => "admin123");
 $valid_users = array_keys($valid_passwords);
 $user = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
@@ -7,21 +10,21 @@ $validated = (in_array($user, $valid_users)) && ($pass == $valid_passwords[$user
 if (!$validated) {
   header('WWW-Authenticate: Basic realm="ArtForm"');
   header('HTTP/1.0 401 Unauthorized');
-  die ("Not authorized");
+  die ("Not authorized $user/$pass.");
 }
 //----------- start authorized -------------
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  return preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 if ($action == 'save' && isset($_POST['id'])) {
   $id = $_POST['id'];
-  if (!preg_match('/^[0-9a-zA-Z\-\_]{4,20}$/', $id))
-    die('!Id must have length 4-20 and consists of letters, numbers, "-", and "_".');
+  if (!preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id))
+    die('!Id must have length 4-50 and consists of letters, numbers, "-", ":" and "_".');
   
   $fid = "forms/$id";
   if (file_exists($fid))
@@ -42,7 +45,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   $fid = 'forms/'.$_POST['id'];
   $data = [];
   foreach(scandir("$fid") as $fn) {
-    if (!is_dir("$fid/$fn") && preg_match('/^[0-9]+\.dat\.json$/', $fn)) {
+    if (!is_dir("$fid/$fn") && preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}+\.dat\.json$/', $fn)) {
       $data[] = file_get_contents("$fid/$fn");
     }
   }
@@ -68,8 +71,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css" />
 
 <style type="text/css">
-  body  {background: linear-gradient(to top right, #f40, #fa2);}
-
+  body  {background: linear-gradient(to top right, #B65256, #E5C5C0);}
   #ls {margin-bottom:1em;}
   #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background: #11fd; color:white; margin:0.2em; border-radius:0.2em;}
   
@@ -84,7 +86,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 </style>
 </head>
 <body>
-
+<?php if(file_exists("format_header.html")) include ("format_header.html");?>
 <div id="formbuilder"></div>
 <hrule />
 <div id="ls"></div>
