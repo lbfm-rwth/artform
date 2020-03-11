@@ -3,7 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  return preg_match('/^[0-9a-zA-Z\-\_]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 if ( isset($_POST['action']) && $_POST['action'] == 'submit'
@@ -37,7 +37,10 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
 </head>
 <style type="text/css">
     body  {background: linear-gradient(to top right, #00549F, #C7DDF2);}
-    form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;}
+    html,body {width:100%;}
+    form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4; max-width:40rem; margin:0 auto;
+    }
+    form, form * {font-size: 1.2rem;}
 </style>
 <body>
 <?php if(file_exists("format_header.html")) include ("format_header.html");?>

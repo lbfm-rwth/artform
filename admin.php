@@ -1,5 +1,5 @@
 <?php
-
+/* authorize using .htaccess
 $valid_passwords = array ("admin" => "admin123");
 $valid_users = array_keys($valid_passwords);
 $user = isset($_SERVER['PHP_AUTH_USER']) ? $_SERVER['PHP_AUTH_USER'] : '';
@@ -8,20 +8,21 @@ $validated = (in_array($user, $valid_users)) && ($pass == $valid_passwords[$user
 if (!$validated) {
   header('WWW-Authenticate: Basic realm="ArtForm"');
   header('HTTP/1.0 401 Unauthorized');
-  die ("Not authorized $user/$pass.");
+  die ("Not authorized.");
 }
+*/
 //----------- start authorized -------------
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function isValidFormId($id) {
-  return preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  return preg_match('/^[0-9a-zA-Z\-\_]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 if ($action == 'save' && isset($_POST['id'])) {
   $id = $_POST['id'];
-  if (!preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}$/', $id))
+  if (!preg_match('/^[0-9a-zA-Z\-\_]{4,50}$/', $id))
     die('!Id must have length 4-50 and consists of letters, numbers, "-", ":" and "_".');
   
   $fid = "forms/$id";
@@ -43,7 +44,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   $fid = 'forms/'.$_POST['id'];
   $data = [];
   foreach(scandir("$fid") as $fn) {
-    if (!is_dir("$fid/$fn") && preg_match('/^[0-9a-zA-Z\-\_\:]{4,50}+\.dat\.json$/', $fn)) {
+    if (!is_dir("$fid/$fn") && preg_match('/^[0-9a-zA-Z\-\_]{4,50}+\.dat\.json$/', $fn)) {
       $data[] = file_get_contents("$fid/$fn");
     }
   }
@@ -73,9 +74,11 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   #ls {margin-bottom:1em;}
   #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background: #11fd; color:white; margin:0.2em; border-radius:0.2em;}
   
-  #view {margin:0.5em; background:#fff4; padding:0.5em; border-radius: 0.5em;}
+  #view {background:#fff4; padding:0.2em; border-radius: 0.5em;}
+  #view > * {margin:0.5em; }
   #view > span {font-size: 2em; margin: 1em;}
-  #view > a:not(:empty) {background: white; padding: 0.5em;}
+  #view > a[href=""], #view > input[value=""] {display:none;}
+  #view > input {width: 20em;}
   
   .btn.clear-all {background: #f00a; color:white;}
   .btn.save-template {background: #090a; color:white;}
@@ -87,7 +90,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 <hrule />
 <div id="ls"></div>
 <div id="view">
-<span></span><a target="_blank"></a><br /><br />
+<span></span><a href="" target="_blank">[link]</a><input type="text" value="" readonly /><br /><br />
 <table class="cell-border compact stripe hover"></table>
 </div>
 
@@ -145,7 +148,8 @@ $($ => {
             columns: columns.length ? columns : noCols
          });
          $("#view > span").text(id);
-         $('#view > a').text(makeLink(id)).attr('href', makeLink(id));
+         $('#view > a').attr('href', makeLink(id));
+         $('#view > input').attr('value', makeLink(id));
        }, 'json');
      }).appendTo("#ls");
     }
