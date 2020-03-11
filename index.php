@@ -39,7 +39,12 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
 </head>
 <style type="text/css">
     body  {background: linear-gradient(to top right, #f40, #fa2);}
-    form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;}
+    html,body {width:100%;}
+    form, #msg:not(:empty)  {border-radius: 1em; padding:2em; margin:1em; background:#fff4;
+        max-width:40rem; margin:0 auto;
+    }
+    form, form * {font-size: 1.2rem;}
+    
 </style>
 <body>
 

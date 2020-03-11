@@ -73,9 +73,11 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   #ls {margin-bottom:1em;}
   #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background: #11fd; color:white; margin:0.2em; border-radius:0.2em;}
   
-  #view {margin:0.5em; background:#fff4; padding:0.5em; border-radius: 0.5em;}
+  #view {background:#fff4; padding:0.2em; border-radius: 0.5em;}
+  #view > * {margin:0.5em; }
   #view > span {font-size: 2em; margin: 1em;}
-  #view > a:not(:empty) {background: white; padding: 0.5em;}
+  #view > a[href=""], #view > input[value=""] {display:none;}
+  #view > input {width: 20em;}
   
   .btn.clear-all {background: #f00a; color:white;}
   .btn.save-template {background: #090a; color:white;}
@@ -87,7 +89,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 <hrule />
 <div id="ls"></div>
 <div id="view">
-<span></span><a target="_blank"></a><br /><br />
+<span></span><a href="" target="_blank">[link]</a><input type="text" value="" readonly /><br /><br />
 <table class="cell-border compact stripe hover"></table>
 </div>
 
@@ -145,7 +147,8 @@ $($ => {
             columns: columns.length ? columns : noCols
          });
          $("#view > span").text(id);
-         $('#view > a').text(makeLink(id)).attr('href', makeLink(id));
+         $('#view > a').attr('href', makeLink(id));
+         $('#view > input').attr('value', makeLink(id));
        }, 'json');
      }).appendTo("#ls");
     }
