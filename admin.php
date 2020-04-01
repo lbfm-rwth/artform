@@ -79,6 +79,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   #view > span {font-size: 2em; margin: 1em;}
   #view > a[href=""], #view > input[value=""] {display:none;}
   #view > input {width: 20em;}
+  #template:not([data-id])  {display:none;}
   
   .btn.clear-all {background: #f00a; color:white;}
   .btn.save-template {background: #090a; color:white;}
@@ -90,7 +91,7 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 <hrule />
 <div id="ls"></div>
 <div id="view">
-<span></span><a href="" target="_blank">[link]</a><input type="text" value="" readonly /><br /><br />
+<span></span><a href="" target="_blank">[link]</a><input type="text" value="" readonly /><button id="template">use as template</button><br /><br />
 <table class="cell-border compact stripe hover"></table>
 </div>
 
@@ -113,18 +114,38 @@ function makeLink(id) {
   return location.href.replace(/admin\.php.*$/, '?' + id);
 }
 
+
+var formBuilder;
+
+const defaultOps = {
+  acionButtons: ['save', 'clear'],
+  controlOrder: ['header', 'text', 'textarea', 'number', 'date',
+  'select', 'checkbox-group', 'radio-group', 'paragraph'],
+  disableFields: ['autocomplete', 'button', 'hidden', 'file'],
+  disabledActionButtons: ['data'],
+  disabledAttrs: ['access'],
+  disabledSubtypes: {text: ['password']},
+  fields: [{label: "Email", type: "text", subtype: "email", icon: "@",},
+    {label: "Name", type: "text", subtype: "text", icon: "[]"}],
+  onSave: (evt, formData) => makeForm(formData, '')
+};
+
 $($ => {
-  $('#formbuilder').formBuilder({
-    acionButtons: ['save', 'clear'],
-    controlOrder: ['header', 'text', 'textarea', 'number', 'date',
-    'select', 'checkbox-group', 'radio-group', 'paragraph'],
-    disableFields: ['autocomplete', 'button', 'hidden', 'file'],
-    disabledActionButtons: ['data'],
-    disabledAttrs: ['access'],
-    disabledSubtypes: {text: ['password']},
-    fields: [{label: "Email", type: "text", subtype: "email", icon: "@",},
-      {label: "Name", type: "text", subtype: "text", icon: "[]"}],
-    onSave: (evt, formData) => makeForm(formData, '')
+  
+  formBuilder = $('#formbuilder').formBuilder(defaultOps);
+  
+  
+  $('#template').click(function() {
+    if (!window.confirm('Replace unsaved form?'))  return;
+    const id = $(this).attr('data-id');
+    $.get('forms/'+id+'/form.json', function(formdata) {
+      var ops = defaultOps;
+      ops.formData = formdata;
+      ops.dataType = 'json';
+      formBuilder = $('#formbuilder').empty().formBuilder(ops);
+    }, 'text').fail(function() {
+      window.alert('Couldnt load form data.');
+    });
   });
   
   dt = $('#view > table').DataTable({columns: noCols});
@@ -150,6 +171,7 @@ $($ => {
          $("#view > span").text(id);
          $('#view > a').attr('href', makeLink(id));
          $('#view > input').attr('value', makeLink(id));
+         $('#template').attr('data-id', id);
        }, 'json');
      }).appendTo("#ls");
     }
