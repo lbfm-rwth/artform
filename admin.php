@@ -81,6 +81,8 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   #view > input {width: 20em;}
   #template:not([data-id])  {display:none;}
   
+ #template {border-radius:0.2em; background: #0aad; border:none; padding:0.5em; color:white;}
+  
   .btn.clear-all {background: #f00a; color:white;}
   .btn.save-template {background: #090a; color:white;}
 </style>
