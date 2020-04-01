@@ -46,7 +46,7 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
 <?php if(file_exists("format_header.html")) include ("format_header.html");?>
 <form>
 <div id="formContent"></div>
-<button id="submit">submit</button>
+<input type="submit" />
 </form>
 
 <div id="msg"></div>
@@ -60,15 +60,15 @@ $($ => {
     }, 'text').fail(function(){
       $("body > form").html("<h2>There is no survey here. You are on the wrong page.</h2>");
     });
-    $('#submit').click(function() {
+    $('form').on('submit', function(e) {
       const data = $('form').serializeArray();
       $.post('', {action: 'submit', id: id, data: data}, function(reply) {
         $('body > form').remove();
         $('#msg').html(reply);
       });
+      e.preventDefault();
     });
     
-    $('form').on('submit', $ => {return false;});
   }
   else{
     $("body > form").html("<h2>There is no survey here. You are on the wrong page.</h2>");
