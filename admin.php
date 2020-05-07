@@ -85,6 +85,8 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   
   .btn.clear-all {background: #f00a; color:white;}
   .btn.save-template {background: #090a; color:white;}
+
+  table.dataTable tbody td {white-space: pre-wrap;}
 </style>
 </head>
 <body>
