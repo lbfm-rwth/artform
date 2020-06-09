@@ -15,8 +15,12 @@ if (!$validated) {
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+$path = 'forms/';
+
 function isValidFormId($id) {
-  return preg_match('/^[0-9a-zA-Z\-\_]{4,50}$/', $id) && file_exists("forms/$id") && is_dir("forms/$id");
+  global $path;
+  return preg_match('/^[0-9a-zA-Z\-\_]{4,50}$/', $id)
+   && file_exists($path.$id) && is_dir($path.$id);
 }
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';
@@ -25,7 +29,7 @@ if ($action == 'save' && isset($_POST['id'])) {
   if (!preg_match('/^[0-9a-zA-Z\-\_]{4,50}$/', $id))
     die('!Id must have length 4-50 and consists of letters, numbers, "-", ":" and "_".');
   
-  $fid = "forms/$id";
+  $fid = $path.$id;
   if (file_exists($fid))
     die("!Id \"$id\" exists already.");
   
@@ -37,14 +41,21 @@ if ($action == 'save' && isset($_POST['id'])) {
 }
 
 if ($action == 'ls') {
-  die(json_encode(array_values(array_filter(scandir('forms/'), 'isValidFormId'))));
+  die(json_encode(array_values(array_filter(scandir($path),
+    'isValidFormId'))));
+}
+
+if ($action == 'archive' && isValidFormId($_POST['id'])) {
+  rename($path.$_POST['id'], $path.'_'.$_POST['id']);
 }
       
-if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
-  $fid = 'forms/'.$_POST['id'];
+if ($action == 'view' && isset($_POST['id']) 
+        && isValidFormId($_POST['id'])) {
+  $fid = $path.$_POST['id'];
   $data = [];
   foreach(scandir("$fid") as $fn) {
-    if (!is_dir("$fid/$fn") && preg_match('/^[0-9a-zA-Z\-\_]{4,50}+\.dat\.json$/', $fn)) {
+    if (!is_dir("$fid/$fn") 
+          && preg_match('/^[0-9a-zA-Z\-\_]{4,50}+\.dat\.json$/', $fn)) {
       $data[] = file_get_contents("$fid/$fn");
     }
   }
@@ -73,15 +84,17 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
   body  {background: linear-gradient(to top right, #B65256, #E5C5C0);}
   #ls {margin-bottom:1em;}
   #ls > div {display:inline-block; padding:0.5em; cursor:pointer; background: #11fd; color:white; margin:0.2em; border-radius:0.2em;}
+  #ls > div[data-archived=true] {background: #66de;}
   
   #view {background:#fff4; padding:0.2em; border-radius: 0.5em;}
   #view > * {margin:0.5em; }
   #view > span {font-size: 2em; margin: 1em;}
   #view > a[href=""], #view > input[value=""] {display:none;}
   #view > input {width: 20em;}
-  #template:not([data-id])  {display:none;}
+  #template:not([data-id]),#archive:not([data-id])  {display:none;}
   
  #template {border-radius:0.2em; background: #0aad; border:none; padding:0.5em; color:white;}
+ #archive {border-radius:0.2em; background: #a0ad; border:none; padding:0.5em; color:white;}
   
   .btn.clear-all {background: #f00a; color:white;}
   .btn.save-template {background: #090a; color:white;}
@@ -95,7 +108,12 @@ if ($action == 'view' && isset($_POST['id']) && isValidFormId($_POST['id'])) {
 <hrule />
 <div id="ls"></div>
 <div id="view">
-<span></span><a href="" target="_blank">[link]</a><input type="text" value="" readonly /><button id="template">use as template</button><br /><br />
+<span></span>
+<a href="" target="_blank">[link]</a>
+<input type="text" value="" readonly />
+<button id="template">use as template</button>
+<button id="archive">archive</button>
+<br /><br />
 <table class="cell-border compact stripe hover"></table>
 </div>
 
@@ -134,6 +152,8 @@ const defaultOps = {
   onSave: (evt, formData) => makeForm(formData, '')
 };
 
+const path = "<?php echo $path; ?>";
+
 $($ => {
   
   formBuilder = $('#formbuilder').formBuilder(defaultOps);
@@ -142,7 +162,7 @@ $($ => {
   $('#template').click(function() {
     if (!window.confirm('Replace unsaved form?'))  return;
     const id = $(this).attr('data-id');
-    $.get('forms/'+id+'/form.json', function(formdata) {
+    $.get(path+id+'/form.json', function(formdata) {
       var ops = defaultOps;
       ops.formData = formdata;
       ops.dataType = 'json';
@@ -151,13 +171,24 @@ $($ => {
       window.alert('Couldnt load form data.');
     });
   });
-  
+  $('#archive').click(function() {
+    if (!window.confirm('Archive this survey and discard unsaved form?'))  return;
+    const id = $(this).attr('data-id');
+    $.post('',{action: 'archive', id: id}, function() {
+      location.refresh();
+    });
+  });
+
   dt = $('#view > table').DataTable({columns: noCols});
   
   $.post('', {action: 'ls'}, function(ls) {
     for (var i=0; i<ls.length; ++i) {
      const id = ls[i];
-     $('<div/>').text(id).click(function() {
+     if (!id || id.length <=1) continue;
+     $('<div/>')
+     .attr('data-archived', id[0] == '_')
+     .text(id)
+     .click(function() {
        $.post('', {action: 'view', id: id}, function(raw) {
          var data = [], columns = [];
          for (var i = 0; i<raw.length; ++i) {
@@ -176,6 +207,7 @@ $($ => {
          $('#view > a').attr('href', makeLink(id));
          $('#view > input').attr('value', makeLink(id));
          $('#template').attr('data-id', id);
+         $('#archive').attr('data-id', (id[0] != '_') ? id: null);
        }, 'json');
      }).appendTo("#ls");
     }

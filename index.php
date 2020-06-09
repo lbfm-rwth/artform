@@ -9,6 +9,8 @@ function isValidFormId($id) {
 if ( isset($_POST['action']) && $_POST['action'] == 'submit'
   && isset($_POST['id']) && isValidFormId($_POST['id'])
   && isset($_POST['data']) )  {
+
+  if ($_POST['id'][0] == '_') die('Error: Form inactive.');
   
   $fid = 'forms/'.$_POST['id'];
   $data = $_POST['data'];
@@ -54,7 +56,7 @@ if ( isset($_POST['action']) && $_POST['action'] == 'submit'
 <script>
 $($ => {
   const id = (location.search.length > 1) ? location.search.substr(1) : null;
-  if (id) {
+  if (id && id.lenth > 1 && id[0] != '_') {
     $.get('forms/'+id+'/form.json', function(formdata) {
       $("#formContent").formRender({formData:formdata});
     }, 'text').fail(function(){
