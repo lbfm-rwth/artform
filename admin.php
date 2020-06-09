@@ -175,7 +175,7 @@ $($ => {
     if (!window.confirm('Archive this survey and discard unsaved form?'))  return;
     const id = $(this).attr('data-id');
     $.post('',{action: 'archive', id: id}, function() {
-      location.refresh();
+      location.reload();
     });
   });
 
